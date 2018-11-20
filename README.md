@@ -1,2 +1,2 @@
 # ArrowFunctor
-Example of how use functors abstract containers
+Example of how use functors to abstract containers away
