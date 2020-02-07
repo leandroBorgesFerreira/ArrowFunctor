@@ -29,7 +29,7 @@ fun main(args: Array<String>) {
     }
 
     val data2 : Observable<Int> = Observable.just(1,2,3,4,5)
-    val newData2: Kind<ForObservableK, Int> = applyOurLogicWithLift(data2.k(), ObservableK.functor())
+    val newData2: Kind<ForObservableK, Int> = applyOurLogicWithLift(data2.k(), ObservableK.functor(), sum10MultBy5)
     println("Caso 2 - Eu quero usar RxJava")
     newData2.fix()
         .observable
@@ -39,7 +39,7 @@ fun main(args: Array<String>) {
 
     val data3: IO<ListK<Int>> = IO.just(listOf(1,2,3,4,5).k())
     val functor = IO.functor().compose(ListK.functor())
-    val result = applyOurLogicWithLift(data3.nest(), functor)
+    val result = applyOurLogicWithLift(data3.nest(), functor, sum10MultBy5)
     println("Caso 3!! - Usando Coroutines (e IO) agora")
     result.unnest()
         .fix()
