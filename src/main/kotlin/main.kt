@@ -15,9 +15,13 @@ import arrow.typeclasses.nest
 import arrow.typeclasses.unnest
 import io.reactivex.Observable
 
+val sum10 : (Int) -> Int = { num : Int -> num + 10 }
+val multBy5 : (Int) -> Int = { num : Int -> num * 5 }
+val sum10MultBy5 : (Int) -> Int = multBy5 compose sum10
+
 fun main(args: Array<String>) {
     val data1 : ListK<Int> = listOf(1,2,3,4,5).k()
-    val newData1: Kind<ForListK, Int> = applyOurLogicWithLift(data1, ListK.functor())
+    val newData1: Kind<ForListK, Int> = applyOurLogicWithLift(data1, ListK.functor(), sum10MultBy5)
 
     println("Caso 1!! - Eu só quero usar Collections")
     newData1.fix().forEachIndexed { i, num ->
@@ -46,17 +50,9 @@ fun main(args: Array<String>) {
         }
 }
 
-val sum10 : (Int) -> Int = { num : Int -> num + 10 }
-val multBy5 : (Int) -> Int = { num : Int -> num * 5 }
-val sum10MultBy5 : (Int) -> Int = multBy5 compose sum10
+fun <F> applyOurLogicWithLift(data: Kind<F, Int>, functor: Functor<F>, function: (Int) -> Int): Kind<F, Int> =
+    functor.lift(function).invoke(data)
 
-fun <F> applyOurLogicWithLift(data: Kind<F, Int>, functor: Functor<F>): Kind<F, Int> =
-    functor.lift(sum10MultBy5).invoke(data)
-
-fun <F> applyOurLogicWithExtensions(data: Kind<F, Int>, functor: Functor<F>) {
-    functor.run {
-        data.map { num ->
-            sum10MultBy5(num)
-        }
-    }
+fun <F> applyOurLogicWithExtensions(data: Kind<F, Int>, functor: Functor<F>, function: (Int) -> Int) {
+    functor.run { data.map(function) }
 }
