@@ -1,4 +1,3 @@
-
 import arrow.Kind
 import arrow.data.ForListK
 import arrow.data.ListK
@@ -15,20 +14,30 @@ import arrow.typeclasses.nest
 import arrow.typeclasses.unnest
 import io.reactivex.Observable
 
-val sum10 : (Int) -> Int = { num : Int -> num + 10 }
-val multBy5 : (Int) -> Int = { num : Int -> num * 5 }
-val sum10MultBy5 : (Int) -> Int = multBy5 compose sum10
+val sum10: (Int) -> Int = { num: Int -> num + 10 }
+val multBy5: (Int) -> Int = { num: Int -> num * 5 }
+val sum10MultBy5: (Int) -> Int = multBy5 compose sum10
 
 fun main(args: Array<String>) {
-    val data1 : ListK<Int> = listOf(1,2,3,4,5).k()
-    val newData1: Kind<ForListK, Int> = applyOurLogicWithLift(data1, ListK.functor(), sum10MultBy5)
+    testCase1()
+    testCase2()
+    testCase3()
+}
+
+
+fun testCase1() {
+    val data1: ListK<Int> = listOf(1, 2, 3, 4, 5).k()
+    val newData1: Kind<ForListK, Int> = applyOurLogicWithExtensions(data1, ListK.functor(), sum10MultBy5)
 
     println("Caso 1!! - Eu só quero usar Collections")
-    newData1.fix().forEachIndexed { i, num ->
-        println("Resultado $i: $num")
-    }
+    newData1.fix()
+        .forEachIndexed { i, num ->
+            println("Resultado $i: $num")
+        }
+}
 
-    val data2 : Observable<Int> = Observable.just(1,2,3,4,5)
+fun testCase2() {
+    val data2: Observable<Int> = Observable.just(1, 2, 3, 4, 5)
     val newData2: Kind<ForObservableK, Int> = applyOurLogicWithLift(data2.k(), ObservableK.functor(), sum10MultBy5)
     println("Caso 2 - Eu quero usar RxJava")
     newData2.fix()
@@ -36,8 +45,10 @@ fun main(args: Array<String>) {
         .subscribe { num ->
             println("Resultado: $num")
         }
+}
 
-    val data3: IO<ListK<Int>> = IO.just(listOf(1,2,3,4,5).k())
+fun testCase3() {
+    val data3: IO<ListK<Int>> = IO.just(listOf(1, 2, 3, 4, 5).k())
     val functor = IO.functor().compose(ListK.functor())
     val result = applyOurLogicWithLift(data3.nest(), functor, sum10MultBy5)
     println("Caso 3!! - Usando Coroutines (e IO) agora")
@@ -53,6 +64,5 @@ fun main(args: Array<String>) {
 fun <F> applyOurLogicWithLift(data: Kind<F, Int>, functor: Functor<F>, function: (Int) -> Int): Kind<F, Int> =
     functor.lift(function).invoke(data)
 
-fun <F> applyOurLogicWithExtensions(data: Kind<F, Int>, functor: Functor<F>, function: (Int) -> Int) {
+fun <F> applyOurLogicWithExtensions(data: Kind<F, Int>, functor: Functor<F>, function: (Int) -> Int): Kind<F, Int> =
     functor.run { data.map(function) }
-}
